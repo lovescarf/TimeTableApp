@@ -1,6 +1,7 @@
 # --- Secrets & Config ---
 .env
 token.json
+credentials.json
 client_secret.json
 
 # --- Local Testing Scripts ---

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kartik's Dashboard — {{ 'Register' if mode == 'register' else 'Login' }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-night: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+      --glass-bg: rgba(30, 27, 75, 0.35);
+      --glass-border: rgba(255, 255, 255, 0.10);
+      --accent-blue: #38bdf8;
+      --accent-purple: #818cf8;
+    }
+    body {
+      background: var(--bg-night);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #e2e8f0;
+      font-family: 'Syne', system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .dark-input {
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #e2e8f0;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    .dark-input:focus {
+      border-color: rgba(56, 189, 248, 0.65);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(56,189,248,0.95), rgba(129,140,248,0.95));
+      color: #020617;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 800;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      box-shadow: 0 10px 28px rgba(56,189,248,0.18);
+    }
+    .btn-primary:hover { transform: translateY(-1px); opacity: 0.95; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md glass rounded-3xl p-7">
+      <div class="mb-6">
+        <div class="text-xs tracking-[0.22em] uppercase text-slate-400">Night-Glass</div>
+        <h1 class="text-2xl font-extrabold mt-2">Kartik's Dashboard</h1>
+        <p class="text-slate-400 text-sm mt-1">
+          {{ 'Create your account to enable streaks, timetable, alarms, and AI.' if mode == 'register' else 'Login to continue your streak and start your day.' }}
+        </p>
+      </div>
+
+      {% if error %}
+        <div class="mb-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      {% if mode == 'register' %}
+      <form method="POST" action="/register" class="space-y-4">
+        <div>
+          <label class="text-xs text-slate-400 tracking-widest uppercase">Username</label>
+          <input class="dark-input mt-2" name="username" value="{{ username or 'Kartik' }}" autocomplete="username" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 tracking-widest uppercase">PIN</label>
+          <input class="dark-input mt-2 mono" name="pin" inputmode="numeric" minlength="4" autocomplete="new-password" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 tracking-widest uppercase">Confirm PIN</label>
+          <input class="dark-input mt-2 mono" name="pin2" inputmode="numeric" minlength="4" autocomplete="new-password" />
+        </div>
+        <button class="btn-primary w-full" type="submit">Create Account</button>
+      </form>
+      <div class="mt-5 text-sm text-slate-400">
+        Already have an account?
+        <a class="text-cyan-300 hover:text-cyan-200 font-semibold" href="/login">Login</a>
+      </div>
+      {% else %}
+      <form method="POST" action="/login" class="space-y-4">
+        <div>
+          <label class="text-xs text-slate-400 tracking-widest uppercase">Username</label>
+          <input class="dark-input mt-2" name="username" value="{{ username or 'Kartik' }}" autocomplete="username" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 tracking-widest uppercase">PIN</label>
+          <input class="dark-input mt-2 mono" name="pin" inputmode="numeric" minlength="4" autocomplete="current-password" />
+        </div>
+        <button class="btn-primary w-full" type="submit">Login</button>
+      </form>
+      <div class="mt-5 text-sm text-slate-400">
+        New here?
+        <a class="text-cyan-300 hover:text-cyan-200 font-semibold" href="/register">Create an account</a>
+      </div>
+      {% endif %}
+
+      <div class="mt-6 pt-5 border-t border-white/10 text-xs text-slate-500 leading-relaxed">
+        Your streak updates on successful login:
+        <span class="text-slate-300">+1</span> if you return after 24 hours,
+        <span class="text-slate-300">reset</span> if you miss more than 48 hours.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

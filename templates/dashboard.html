@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kartik's Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-night: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+      --glass-bg: rgba(15, 23, 42, 0.40); /* slate-900/40 */
+      --glass-border: rgba(255, 255, 255, 0.10); /* white/10 */
+      --accent-blue: #38bdf8;
+      --accent-purple: #818cf8;
+      --green: #22d47e;
+      --green-glow: rgba(34,212,126,0.35);
+      --blue-glow: rgba(56,189,248,0.18);
+    }
+    body {
+      background: var(--bg-night);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+      overflow-x: hidden;
+    }
+    h1, h2, h3,
+    .font-outfit {
+      font-family: 'Outfit', system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 48px rgba(0,0,0,0.45);
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; }
+    .btn {
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      transition: all 0.3s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, rgba(34,211,238,0.95), rgba(139,92,246,0.95));
+      color: #020617;
+      box-shadow: 0 18px 38px var(--blue-glow);
+    }
+    .btn-primary:hover { transform: translateY(-1px); opacity: 0.95; }
+    .btn-ghost {
+      border: 1px solid rgba(148, 163, 184, 0.25); /* slate-400/25 */
+      color: #cbd5e1;
+      background: rgba(30, 41, 59, 0.25); /* slate-800/25 */
+    }
+    .btn-ghost:hover { border-color: rgba(34,211,238,0.60); background: rgba(255,255,255,0.05); }
+    .dark-input {
+      background: rgba(30, 41, 59, 0.50); /* slate-800/50 */
+      border: 1px solid rgba(51, 65, 85, 1); /* slate-700 */
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #e2e8f0;
+      outline: none;
+      width: 100%;
+      transition: all 0.2s ease;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.875rem;
+    }
+    .dark-input:focus {
+      border-color: rgba(34, 211, 238, 0.65);
+      box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+    }
+    @keyframes streakPulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green-glow), 0 0 16px var(--green-glow); }
+      50% { box-shadow: 0 0 0 8px transparent, 0 0 32px var(--green-glow); }
+    }
+    .streak-pulse { animation: streakPulse 2.4s ease-in-out infinite; }
+    .task-check {
+      appearance: none;
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 0.45rem;
+      border: 1px solid rgb(71 85 105);
+      background: rgba(30, 41, 59, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .task-check:checked {
+      background: rgba(8, 145, 178, 0.25);
+      border-color: rgba(34, 211, 238, 0.9);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+    }
+    .task-check:checked::after {
+      content: '✓';
+      color: #22d3ee;
+      font-size: 0.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <header id="main-header" class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+      <div>
+        <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Night-Glass</div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mt-2">
+          Good <span id="greeting" class="text-cyan-300">Morning</span>, <span id="username" class="font-outfit">{{ username }}</span>
+        </h1>
+        <p class="text-sm font-medium text-slate-200/80 mt-1">Single-page dashboard for timetable, alarms, and calendar.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl px-4 py-3 flex items-center gap-3 streak-pulse">
+          <div class="text-amber-300 text-2xl leading-none">🔥</div>
+          <div>
+            <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Streak</div>
+            <div class="text-xl font-extrabold leading-tight font-outfit"><span id="streak">{{ streak }}</span> <span class="text-xs text-slate-500 font-semibold">days</span></div>
+          </div>
+        </div>
+        <div class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl px-4 py-3">
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Now</div>
+          <div id="clock" class="font-outfit text-xl font-extrabold tracking-tight text-slate-100 mt-0.5">—</div>
+        </div>
+        <button class="btn btn-ghost" onclick="openFocusMode()">Focus Mode</button>
+        <button class="btn btn-ghost" onclick="openSettings()">Settings</button>
+        <form method="POST" action="/logout">
+          <button class="btn btn-ghost" type="submit">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <!-- Calendar -->
+      <section class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl p-6 lg:col-span-1">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Calendar</div>
+            <div class="text-lg font-extrabold mt-1 font-outfit" id="month-title">Month</div>
+          </div>
+          <a id="google-connect" href="/google/login" class="btn btn-primary text-sm hidden">Connect Google</a>
+        </div>
+        <div class="mt-5 grid grid-cols-7 gap-2 text-xs text-slate-500">
+          <div class="text-center">Sun</div><div class="text-center">Mon</div><div class="text-center">Tue</div><div class="text-center">Wed</div><div class="text-center">Thu</div><div class="text-center">Fri</div><div class="text-center">Sat</div>
+        </div>
+        <div id="month-grid" class="mt-3 grid grid-cols-7 gap-2"></div>
+        <div class="mt-5">
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">This month</div>
+          <div id="event-list" class="mt-4 space-y-4 max-h-64 overflow-y-auto pr-1"></div>
+          <div id="event-empty" class="text-sm text-slate-500 mt-3 hidden">No events found.</div>
+        </div>
+      </section>
+
+      <!-- Timetable -->
+      <section class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl p-6 lg:col-span-1">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Smart Timetable</div>
+            <div class="text-lg font-extrabold mt-1 font-outfit">Tasks</div>
+          </div>
+          <div class="text-xs text-slate-500">Auto‑alarm: <span class="text-slate-200 font-semibold">5 min before</span></div>
+        </div>
+
+        <div class="mt-5 glass rounded-2xl p-4 bg-slate-950/10 border border-white/10">
+          <div class="grid grid-cols-1 gap-3">
+            <input id="task-title" class="dark-input" placeholder="Task title (e.g., DSA practice)" />
+            <div class="grid grid-cols-3 gap-2">
+              <select id="task-hour" class="dark-input mono"></select>
+              <select id="task-minute" class="dark-input mono"></select>
+              <select id="task-ampm" class="dark-input mono">
+                <option>AM</option>
+                <option>PM</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <select id="task-status" class="dark-input">
+                <option>Flexible</option>
+                <option>Fixed</option>
+              </select>
+              <button class="btn btn-primary" onclick="createTask()">Add Task</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center justify-between text-xs text-slate-500">
+          <div>Total: <span id="task-count" class="text-slate-200 font-semibold">0</span></div>
+          <div>12‑hour UI only</div>
+        </div>
+        <div id="task-list" class="mt-4 space-y-4 max-h-[420px] overflow-y-auto pr-1"></div>
+        <div id="task-empty" class="text-sm text-slate-500 mt-3 hidden">No tasks yet. Add one and an alarm will be created automatically.</div>
+
+        <!-- Minutes wasted shifter -->
+        <div class="mt-6 pt-5 border-t border-white/10">
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Wasted time shifter</div>
+          <div class="mt-3 flex gap-3 items-end">
+            <div class="flex-1">
+              <div class="text-xs text-slate-500">Minutes wasted</div>
+              <input id="wasted-minutes" type="number" min="1" max="720" inputmode="numeric" class="dark-input mt-2" placeholder="e.g., 25" />
+            </div>
+            <button class="btn btn-primary" onclick="shiftSchedule()">Shift Schedule</button>
+          </div>
+          <div class="text-xs text-slate-500 mt-2">Shifts only <span class="text-slate-200 font-semibold">Flexible</span> tasks, and auto‑alarms move with them.</div>
+        </div>
+      </section>
+
+      <!-- Alarms -->
+      <section class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl p-6 lg:col-span-1">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Auto‑Alarms</div>
+            <div class="text-lg font-extrabold mt-1 font-outfit">Active chimes</div>
+          </div>
+          <button class="btn btn-ghost text-sm" onclick="refreshAll()">Refresh</button>
+        </div>
+
+        <div class="mt-5 glass rounded-2xl p-4 bg-slate-950/10 border border-white/10">
+          <div class="grid grid-cols-1 gap-3">
+            <input id="alarm-label" class="dark-input" placeholder="Alarm label (optional)" />
+            <div class="grid grid-cols-3 gap-2">
+              <select id="alarm-hour" class="dark-input mono"></select>
+              <select id="alarm-minute" class="dark-input mono"></select>
+              <select id="alarm-ampm" class="dark-input mono">
+                <option>AM</option>
+                <option>PM</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="createAlarm()">Add Alarm</button>
+          </div>
+        </div>
+
+        <div class="mt-5 glass rounded-2xl p-4 bg-slate-950/10 border border-white/10">
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Custom sound (local mp3)</div>
+          <div class="text-xs text-slate-500 mt-1">Pick any MP3 on your PC — it stays local (no upload).</div>
+          <input id="custom-sound" type="file" accept="audio/mpeg,audio/mp3" class="mt-3 block w-full text-sm text-slate-400 file:mr-3 file:rounded-lg file:border file:border-slate-700 file:bg-slate-800/50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-slate-200 hover:file:bg-white/5 transition-all duration-300" />
+          <div id="sound-status" class="text-xs text-slate-500 mt-2">Using default sound.</div>
+        </div>
+
+        <div class="mt-5 flex items-center justify-between text-xs text-slate-500">
+          <div>Volume: <span id="vol-label" class="text-slate-200 font-semibold">50%</span></div>
+          <div>Plays when system time matches</div>
+        </div>
+        <div id="alarm-list" class="mt-4 space-y-4 max-h-[420px] overflow-y-auto pr-1"></div>
+        <div id="alarm-empty" class="text-sm text-slate-500 mt-3 hidden">No alarms. Add one, or add tasks to auto-create alarms.</div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Hidden alarm audio engine -->
+  <audio id="alarm-audio" src="/static/alarm-sound.mp3" loop preload="auto" class="hidden"></audio>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="fixed inset-0 hidden items-center justify-center p-4" style="background: rgba(2,6,23,0.75); backdrop-filter: blur(10px);">
+    <div class="glass backdrop-blur-xl bg-slate-900/40 border border-white/10 shadow-2xl rounded-2xl w-full max-w-md p-6">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-extrabold font-outfit">Settings</div>
+        <button class="btn btn-ghost text-sm" onclick="closeSettings()">Close</button>
+      </div>
+      <div class="mt-5 space-y-4">
+        <div>
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Alarm volume</div>
+          <input id="volume" type="range" min="0" max="1" step="0.05" class="w-full mt-3" />
+        </div>
+        <div class="text-xs text-slate-500 leading-relaxed">
+          Note: Alarm sound is generated locally via Web Audio (no external files) and respects this volume.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alarm Dismiss Modal -->
+  <div id="dismiss-modal" class="fixed inset-0 hidden items-center justify-center p-4" style="background: rgba(2,6,23,0.75); backdrop-filter: blur(10px);">
+    <div class="glass backdrop-blur-xl bg-slate-900/50 border border-white/10 shadow-2xl rounded-2xl w-full max-w-md p-6">
+      <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Alarm</div>
+      <div class="mt-2 text-2xl font-extrabold font-outfit tracking-tight" id="dismiss-title">Time</div>
+      <div class="mt-1 text-xs text-slate-500" id="dismiss-subtitle">—</div>
+      <div class="mt-5 flex gap-3">
+        <button class="btn btn-primary flex-1" onclick="dismissAlarm()">Dismiss</button>
+        <button class="btn btn-ghost" onclick="snoozeAlarm()">Snooze 5m</button>
+      </div>
+      <div class="text-xs text-slate-500 mt-4">
+        Tip: If the browser blocks autoplay, click anywhere once to enable audio.
+      </div>
+    </div>
+  </div>
+
+  <!-- Day View Modal -->
+  <div id="day-modal" class="fixed inset-0 hidden items-center justify-center p-4" style="background: rgba(2,6,23,0.75); backdrop-filter: blur(10px);">
+    <div class="glass backdrop-blur-xl bg-slate-900/50 border border-white/10 shadow-2xl rounded-2xl w-full max-w-2xl p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Day view</div>
+          <div class="mt-1 text-xl font-extrabold font-outfit tracking-tight" id="day-title">—</div>
+          <div class="text-xs text-slate-500 mt-1" id="day-subtitle">Google Calendar events for this date</div>
+        </div>
+        <button class="btn btn-ghost" onclick="closeDayView()">Close</button>
+      </div>
+
+      <div id="day-events" class="mt-5 space-y-4 max-h-64 overflow-y-auto pr-1"></div>
+      <div id="day-events-empty" class="text-sm text-slate-500 mt-4 hidden">No events on this day.</div>
+
+      <div class="mt-6 pt-5 border-t border-white/10">
+        <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Quick add event</div>
+        <div class="mt-3 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500">Title</div>
+            <input id="day-add-title" class="dark-input mt-2" placeholder="Event title" />
+          </div>
+          <div class="md:col-span-2 grid grid-cols-3 gap-2">
+            <div>
+              <div class="text-xs text-slate-500">Hour</div>
+              <select id="day-hour" class="dark-input mono mt-2"></select>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500">Min</div>
+              <select id="day-minute" class="dark-input mono mt-2"></select>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500">AM/PM</div>
+              <select id="day-ampm" class="dark-input mono mt-2">
+                <option>AM</option>
+                <option>PM</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary md:col-span-1" onclick="quickAddEvent()">Add</button>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">Creates the event in your <span class="text-slate-200 font-semibold">primary</span> calendar.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Focus Mode Overlay -->
+  <div id="focus-overlay" class="fixed inset-0 hidden items-center justify-center p-4" style="background: rgba(2,6,23,0.80); backdrop-filter: blur(12px);">
+    <div class="glass backdrop-blur-xl bg-slate-900/50 border border-white/10 shadow-2xl rounded-2xl w-full max-w-sm p-6 text-center">
+      <div class="text-xs font-bold tracking-widest uppercase text-slate-400">Focus mode</div>
+      <div class="mt-2 text-2xl font-extrabold font-outfit tracking-tight">Pomodoro</div>
+      <div class="mt-6 flex items-center justify-center">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(34,211,238,0.95)"/>
+              <stop offset="100%" stop-color="rgba(139,92,246,0.95)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="80" cy="80" r="62" stroke="rgba(255,255,255,0.10)" stroke-width="10" fill="none"/>
+          <circle id="focus-ring" cx="80" cy="80" r="62" stroke="url(#ringGrad)" stroke-width="10" fill="none"
+                  stroke-linecap="round"
+                  stroke-dasharray="389.6"
+                  stroke-dashoffset="0"
+                  transform="rotate(-90 80 80)"/>
+        </svg>
+        <div class="absolute font-outfit text-4xl font-extrabold tracking-tight text-slate-100" id="focus-time">25:00</div>
+      </div>
+      <div class="mt-6 flex gap-3">
+        <button id="focus-toggle" class="btn btn-primary flex-1" onclick="toggleFocus()">Start</button>
+        <button class="btn btn-ghost" onclick="resetFocus()">Reset</button>
+      </div>
+      <button class="btn btn-ghost mt-4 w-full" onclick="closeFocusMode()">Close</button>
+    </div>
+  </div>
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden">
+    <div class="glass backdrop-blur-xl bg-slate-900/40 border border-emerald-400/30 shadow-2xl rounded-2xl px-4 py-3 flex items-start gap-3 max-w-sm">
+      <div class="text-emerald-300 text-xl">⏰</div>
+      <div class="min-w-0">
+        <div class="font-outfit font-extrabold text-sm" id="toast-title">Alarm</div>
+        <div class="text-xs text-slate-500 mt-0.5" id="toast-body">Time.</div>
+      </div>
+      <button class="btn btn-ghost text-xs ml-auto" onclick="hideToast()">Dismiss</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    // ---------- Helpers (12-hour UI) ----------
+    const pad2 = (n) => String(n).padStart(2, '0');
+    function to12h(hhmm24) {
+      const [hh, mm] = hhmm24.split(':').map(Number);
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      let h12 = hh % 12;
+      if (h12 === 0) h12 = 12;
+      return `${h12}:${pad2(mm)} ${ampm}`;
+    }
+    function fromPicker(hourEl, minuteEl, ampmEl) {
+      const h = Number(hourEl.value);
+      const m = Number(minuteEl.value);
+      const ampm = ampmEl.value;
+      let hh = h % 12;
+      if (ampm === 'PM') hh += 12;
+      return `${pad2(hh)}:${pad2(m)}`;
+    }
+    function setGreeting() {
+      const h = new Date().getHours();
+      const g = h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : h < 21 ? 'Evening' : 'Night';
+      document.getElementById('greeting').textContent = g;
+    }
+    function setHeaderAccent() {
+      const h = new Date().getHours();
+      // Morning: warm, Afternoon: cyan, Night: violet
+      const header = document.getElementById('main-header');
+      if (!header) return;
+      let glow = 'rgba(34,211,238,0.18)';
+      if (h >= 5 && h < 12) glow = 'rgba(251,146,60,0.18)';      // orange
+      else if (h >= 12 && h < 18) glow = 'rgba(34,211,238,0.18)'; // cyan
+      else glow = 'rgba(139,92,246,0.18)';                        // violet
+      header.style.boxShadow = `0 20px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), 0 0 40px ${glow}`;
+    }
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = pad2(now.getMinutes());
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const el = document.getElementById('clock');
+      if (el) el.textContent = `${hours}:${minutes} ${ampm}`;
+    }
+
+    // ---------- State ----------
+    let tasks = [];
+    let alarms = [];
+    let calendar = { dot_days: [], events: [], month: null };
+    let audioCtx = null;
+    let volume = 0.5;
+    let currentAlarm = null; // {id,label,time_24h}
+    let customSoundUrl = null;
+    let selectedDay = null; // YYYY-MM-DD
+
+    // Focus mode state
+    let focusTotal = 25 * 60;
+    let focusRemaining = focusTotal;
+    let focusRunning = false;
+    let focusTimer = null;
+
+    // ---------- Toast ----------
+    let toastTimer = null;
+    function showToast(title, body) {
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-body').textContent = body;
+      const el = document.getElementById('toast');
+      el.classList.remove('hidden');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 4200);
+    }
+    function hideToast() {
+      document.getElementById('toast').classList.add('hidden');
+    }
+
+    // ---------- Settings ----------
+    function loadSettings() {
+      try {
+        const s = JSON.parse(localStorage.getItem('kd-settings') || '{}');
+        if (typeof s.volume === 'number') volume = Math.max(0, Math.min(1, s.volume));
+      } catch {}
+      const volEl = document.getElementById('volume');
+      volEl.value = String(volume);
+      document.getElementById('vol-label').textContent = `${Math.round(volume * 100)}%`;
+      volEl.addEventListener('input', () => {
+        volume = Number(volEl.value);
+        localStorage.setItem('kd-settings', JSON.stringify({ volume }));
+        document.getElementById('vol-label').textContent = `${Math.round(volume * 100)}%`;
+      });
+    }
+    function openSettings() {
+      document.getElementById('settings-modal').classList.remove('hidden');
+      document.getElementById('settings-modal').classList.add('flex');
+    }
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+      document.getElementById('settings-modal').classList.remove('flex');
+    }
+
+    // ---------- Time pickers (12-hour) ----------
+    function initTimePickers() {
+      const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+      const minutes = [0,5,10,15,20,25,30,35,40,45,50,55];
+      for (const elId of ['task-hour','alarm-hour']) {
+        const el = document.getElementById(elId);
+        hours.forEach(h => {
+          const o = document.createElement('option');
+          o.value = String(h);
+          o.textContent = String(h);
+          el.appendChild(o);
+        });
+      }
+      for (const elId of ['task-minute','alarm-minute']) {
+        const el = document.getElementById(elId);
+        minutes.forEach(m => {
+          const o = document.createElement('option');
+          o.value = String(m);
+          o.textContent = pad2(m);
+          el.appendChild(o);
+        });
+      }
+      // Defaults to "now rounded +5"
+      const now = new Date();
+      const roundMin = Math.ceil(now.getMinutes() / 5) * 5;
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), roundMin % 60, 0);
+      if (roundMin >= 60) d.setHours(d.getHours() + 1);
+      const hh = d.getHours();
+      const mm = d.getMinutes();
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      let h12 = hh % 12; if (h12 === 0) h12 = 12;
+      document.getElementById('task-hour').value = String(h12);
+      document.getElementById('task-minute').value = String(mm);
+      document.getElementById('task-ampm').value = ampm;
+      document.getElementById('alarm-hour').value = String(h12);
+      document.getElementById('alarm-minute').value = String(mm);
+      document.getElementById('alarm-ampm').value = ampm;
+
+      // Day view pickers reuse the same sets
+      for (const elId of ['day-hour']) {
+        const el = document.getElementById(elId);
+        if (!el) continue;
+        el.innerHTML = '';
+        hours.forEach(h => {
+          const o = document.createElement('option');
+          o.value = String(h);
+          o.textContent = String(h);
+          el.appendChild(o);
+        });
+      }
+      for (const elId of ['day-minute']) {
+        const el = document.getElementById(elId);
+        if (!el) continue;
+        el.innerHTML = '';
+        minutes.forEach(m => {
+          const o = document.createElement('option');
+          o.value = String(m);
+          o.textContent = pad2(m);
+          el.appendChild(o);
+        });
+      }
+      document.getElementById('day-hour').value = String(h12);
+      document.getElementById('day-minute').value = String(mm);
+      document.getElementById('day-ampm').value = ampm;
+    }
+
+    // ---------- Confetti ----------
+    function confettiBurst() {
+      if (typeof confetti !== 'function') return;
+      confetti({
+        particleCount: 60,
+        spread: 65,
+        startVelocity: 30,
+        origin: { y: 0.85 },
+        colors: ['#22d3ee', '#8b5cf6', '#34d399', '#fbbf24'],
+      });
+    }
+
+    // ---------- Tasks ----------
+    async function loadTasks() {
+      const res = await fetch('/api/tasks');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'tasks_error');
+      tasks = data;
+      renderTasks();
+    }
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      const empty = document.getElementById('task-empty');
+      document.getElementById('task-count').textContent = String(tasks.length);
+      if (tasks.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = tasks.map(t => {
+        const badge = t.status === 'Fixed'
+          ? `<span class="text-xs font-bold tracking-widest uppercase px-2 py-1 rounded-full border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">Fixed</span>`
+          : `<span class="text-xs font-bold tracking-widest uppercase px-2 py-1 rounded-full border border-emerald-400/20 bg-emerald-400/10 text-emerald-200">Flexible</span>`;
+        const completedCls = t.completed ? 'line-through opacity-50' : '';
+        return `
+          <div class="glass rounded-2xl px-4 py-4 flex items-center gap-3 transition-all duration-300 hover:bg-white/5">
+            <input class="task-check" type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTaskCompleted(${t.id}, this.checked)" />
+            <div class="w-1.5 h-8 rounded-full" style="background:${t.status === 'Fixed' ? 'rgba(56,189,248,0.75)' : 'rgba(34,212,126,0.75)'}"></div>
+            <div class="flex-1 min-w-0 ${completedCls}">
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-medium text-slate-200 truncate">${escapeHtml(t.title)}</div>
+                ${badge}
+              </div>
+              <div class="text-xs text-slate-500 mono mt-1">${to12h(t.time_24h)}</div>
+            </div>
+            <button class="btn btn-ghost text-xs" onclick="deleteTask(${t.id})">Delete</button>
+          </div>
+        `;
+      }).join('');
+    }
+    async function toggleTaskCompleted(taskId, completed) {
+      try {
+        const res = await fetch('/api/toggle-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task_id: taskId, completed })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'toggle_failed');
+        tasks = tasks.map((t) => (t.id === taskId ? { ...t, completed: data.task.completed } : t));
+        renderTasks();
+      } catch (e) {
+        showToast('Update failed', e.message);
+        await loadTasks();
+      }
+    }
+    async function createTask() {
+      const title = (document.getElementById('task-title').value || '').trim();
+      const status = document.getElementById('task-status').value;
+      const time_24h = fromPicker(
+        document.getElementById('task-hour'),
+        document.getElementById('task-minute'),
+        document.getElementById('task-ampm')
+      );
+      if (!title) return showToast('Missing title', 'Please enter a task title.');
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, status, time_24h, alarm_offset_min: 5 })
+      });
+      const data = await res.json();
+      if (!res.ok) return showToast('Task failed', data.error || 'Could not create task.');
+      document.getElementById('task-title').value = '';
+      showToast('Task added', `Auto‑alarm created for ${to12h(data.alarm.time_24h)}.`);
+      await refreshAll();
+    }
+    async function deleteTask(id) {
+      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) return showToast('Delete failed', data.error || 'Could not delete task.');
+      showToast('Deleted', 'Task removed (and its auto‑alarm if it existed).');
+      confettiBurst();
+      await refreshAll();
+    }
+
+    async function shiftSchedule() {
+      const el = document.getElementById('wasted-minutes');
+      const minutes = parseInt(el.value || '0', 10);
+      if (!minutes || minutes <= 0) return showToast('Missing minutes', 'Enter minutes wasted to shift your flexible tasks.');
+      try {
+        const res = await fetch('/api/shift-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ minutes_wasted: minutes })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'shift_error');
+        tasks = data.tasks;
+        alarms = data.alarms;
+        renderTasks();
+        renderAlarms();
+        showToast('Shifted', `Moved flexible tasks by ${data.shifted_minutes} minutes.`);
+        el.value = '';
+      } catch (e) {
+        showToast('Shift failed', e.message);
+      }
+    }
+
+    async function checkAutoShift() {
+      try {
+        const res = await fetch('/api/auto-shift-check', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok || !data.shifted) return;
+        tasks = data.tasks || tasks;
+        alarms = data.alarms || alarms;
+        renderTasks();
+        renderAlarms();
+      } catch (_) {}
+    }
+
+    // ---------- Alarms ----------
+    async function loadAlarms() {
+      const res = await fetch('/api/alarms');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'alarms_error');
+      alarms = data;
+      renderAlarms();
+    }
+    function renderAlarms() {
+      const list = document.getElementById('alarm-list');
+      const empty = document.getElementById('alarm-empty');
+      if (alarms.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = alarms.map(a => {
+        const on = a.is_active;
+        return `
+          <div class="glass rounded-2xl px-4 py-4 flex items-center gap-3 transition-all duration-300 hover:bg-white/5">
+            <div class="w-2 h-2 rounded-full" style="background:${on ? 'rgba(34,212,126,0.9)' : 'rgba(148,163,184,0.6)'}"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-slate-200 truncate">${escapeHtml(a.label || 'Alarm')}</div>
+              <div class="text-xs text-slate-500 mono mt-1">${to12h(a.time_24h)}</div>
+            </div>
+            <button class="btn btn-ghost text-xs" onclick="toggleAlarm(${a.id}, ${on ? 'false' : 'true'})">${on ? 'On' : 'Off'}</button>
+            <button class="btn btn-ghost text-xs" onclick="deleteAlarm(${a.id})">Delete</button>
+          </div>
+        `;
+      }).join('');
+    }
+    async function createAlarm() {
+      const label = (document.getElementById('alarm-label').value || '').trim() || 'Alarm';
+      const time_24h = fromPicker(
+        document.getElementById('alarm-hour'),
+        document.getElementById('alarm-minute'),
+        document.getElementById('alarm-ampm')
+      );
+      const res = await fetch('/api/alarms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label, time_24h, is_active: true })
+      });
+      const data = await res.json();
+      if (!res.ok) return showToast('Alarm failed', data.error || 'Could not create alarm.');
+      document.getElementById('alarm-label').value = '';
+      showToast('Alarm added', `${label} at ${to12h(data.time_24h)}.`);
+      await refreshAll();
+    }
+    async function toggleAlarm(id, is_active) {
+      const res = await fetch(`/api/alarms/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active })
+      });
+      const data = await res.json();
+      if (!res.ok) return showToast('Update failed', data.error || 'Could not update alarm.');
+      await loadAlarms();
+    }
+    async function deleteAlarm(id) {
+      const res = await fetch(`/api/alarms/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) return showToast('Delete failed', data.error || 'Could not delete alarm.');
+      showToast('Deleted', 'Alarm removed.');
+      await loadAlarms();
+    }
+
+    // ---------- Alarm firing (Audio Engine) ----------
+    function getAudioEl() {
+      return document.getElementById('alarm-audio');
+    }
+    function ensureAudioReady() {
+      const audio = getAudioEl();
+      audio.volume = Math.max(0, Math.min(1, volume));
+      // If default MP3 doesn't exist, audio.play() will fail; we fall back to WebAudio chime.
+    }
+    function playFallbackChime() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * 0.35), audioCtx.currentTime + 0.02);
+        osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(784, audioCtx.currentTime + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.60);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.62);
+      } catch {}
+    }
+    async function startAlarm(alarm) {
+      currentAlarm = alarm;
+      document.getElementById('dismiss-title').textContent = alarm.label || 'Alarm';
+      document.getElementById('dismiss-subtitle').textContent = `${to12h(alarm.time_24h)} · Tap dismiss to stop`;
+      const modal = document.getElementById('dismiss-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      ensureAudioReady();
+      const audio = getAudioEl();
+      try {
+        await audio.play();
+      } catch (e) {
+        playFallbackChime();
+      }
+    }
+    function stopAlarmAudio() {
+      const audio = getAudioEl();
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
+    }
+    function dismissAlarm() {
+      stopAlarmAudio();
+      closeDismissModal();
+      showToast('Nice', 'Alarm dismissed.');
+      confettiBurst();
+    }
+    function snoozeAlarm() {
+      // Snooze is local-only (doesn't change DB) — it just stops current audio and re-triggers after 5 minutes.
+      const a = currentAlarm;
+      stopAlarmAudio();
+      closeDismissModal();
+      showToast('Snoozed', 'We’ll remind you again in 5 minutes.');
+      if (!a) return;
+      const key = firedKey(a.id) + ':snooze';
+      localStorage.setItem(key, String(Date.now() + 5 * 60 * 1000));
+    }
+    function closeDismissModal() {
+      const modal = document.getElementById('dismiss-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      currentAlarm = null;
+    }
+    function firedKey(alarmId) {
+      const d = new Date();
+      const day = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+      return `kd-fired:${day}:${alarmId}`;
+    }
+    function checkAlarmsTick() {
+      const now = new Date();
+      const now24 = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+      const active = alarms.filter(a => a.is_active);
+      for (const a of active) {
+        // Snooze handling
+        const snoozeKey = firedKey(a.id) + ':snooze';
+        const snoozeUntil = parseInt(localStorage.getItem(snoozeKey) || '0', 10);
+        if (snoozeUntil && Date.now() < snoozeUntil) continue;
+        if (snoozeUntil && Date.now() >= snoozeUntil) localStorage.removeItem(snoozeKey);
+
+        if (a.time_24h === now24 && !localStorage.getItem(firedKey(a.id))) {
+          localStorage.setItem(firedKey(a.id), '1');
+          showToast('Alarm', `${a.label || 'Alarm'} — ${to12h(a.time_24h)}`);
+          startAlarm(a);
+          if (Notification && Notification.permission === 'granted') {
+            new Notification(`⏰ ${a.label || 'Alarm'}`, { body: `It’s ${to12h(a.time_24h)}` });
+          }
+        }
+      }
+    }
+    function requestNotifications() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') Notification.requestPermission();
+    }
+
+    // ---------- Calendar (month grid + dots) ----------
+    function monthName(year, monthIndex0) {
+      return new Date(year, monthIndex0, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' });
+    }
+    function renderMonthGrid(dotDays) {
+      const grid = document.getElementById('month-grid');
+      grid.innerHTML = '';
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = today.getMonth();
+      document.getElementById('month-title').textContent = monthName(y, m);
+      const first = new Date(y, m, 1);
+      const startDow = first.getDay(); // 0=Sun
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+      const dotSet = new Set(dotDays || []);
+      // leading blanks
+      for (let i = 0; i < startDow; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'h-11';
+        grid.appendChild(cell);
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${y}-${pad2(m + 1)}-${pad2(d)}`;
+        const isToday = d === today.getDate();
+        const cell = document.createElement('div');
+        cell.className = 'h-11 rounded-2xl flex flex-col items-center justify-center border transition-all duration-300 hover:bg-cyan-500/20 cursor-pointer';
+        cell.style.background = isToday ? 'rgba(56,189,248,0.14)' : 'rgba(2,6,23,0.18)';
+        cell.style.borderColor = isToday ? 'rgba(56,189,248,0.45)' : 'rgba(255,255,255,0.08)';
+        cell.addEventListener('click', () => openDayView(dateStr));
+        const num = document.createElement('div');
+        num.className = 'text-sm font-extrabold font-outfit tracking-tight';
+        num.textContent = String(d);
+        const dot = document.createElement('div');
+        dot.className = 'mt-1 w-1.5 h-1.5 rounded-full';
+        dot.style.background = dotSet.has(dateStr) ? 'rgba(129,140,248,0.95)' : 'transparent';
+        cell.appendChild(num);
+        cell.appendChild(dot);
+        grid.appendChild(cell);
+      }
+    }
+    function renderEventList(events) {
+      const list = document.getElementById('event-list');
+      const empty = document.getElementById('event-empty');
+      if (!events || events.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = events.slice(0, 16).map(e => {
+        const time = e.is_all_day ? 'All day' : to12h(e.time_24h);
+        return `
+          <div class="glass rounded-2xl px-4 py-4 border border-white/10 transition-all duration-300 hover:bg-white/5">
+            <div class="text-sm font-medium text-slate-200 truncate">${escapeHtml(e.title)}</div>
+            <div class="text-xs text-slate-500 mt-1 mono font-outfit">${e.date}</div>
+            <div class="text-xs text-slate-500 mt-0.5 mono">${time}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ---------- Day View Modal ----------
+    function openDayView(dateStr) {
+      selectedDay = dateStr;
+      document.getElementById('day-title').textContent = dateStr;
+      const modal = document.getElementById('day-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      renderDayEvents();
+    }
+    function closeDayView() {
+      const modal = document.getElementById('day-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      selectedDay = null;
+    }
+    function renderDayEvents() {
+      const list = document.getElementById('day-events');
+      const empty = document.getElementById('day-events-empty');
+      const events = (calendar?.events || []).filter(e => e.date === selectedDay);
+      if (!events.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = events.map(e => {
+        const time = e.is_all_day ? 'All day' : to12h(e.time_24h);
+        return `
+          <div class="glass rounded-2xl px-4 py-4 border border-white/10 transition-all duration-300 hover:bg-white/5">
+            <div class="text-sm font-medium text-slate-200 truncate">${escapeHtml(e.title)}</div>
+            <div class="text-xs text-slate-500 mt-1 mono">${time}</div>
+          </div>
+        `;
+      }).join('');
+    }
+    async function quickAddEvent() {
+      if (!selectedDay) return;
+      const title = (document.getElementById('day-add-title').value || '').trim();
+      if (!title) return showToast('Missing title', 'Enter an event title.');
+      const time_24h = fromPicker(
+        document.getElementById('day-hour'),
+        document.getElementById('day-minute'),
+        document.getElementById('day-ampm')
+      );
+      try {
+        const res = await fetch('/api/add-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, date: selectedDay, time_24h })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.error === 'google_not_connected' || data.error === 'google_reauth_required') {
+            showToast('Google Calendar', 'Please click “Connect Google” to re-authorize.');
+            return;
+          }
+          throw new Error(data.detail || data.error || 'add_event_error');
+        }
+        document.getElementById('day-add-title').value = '';
+        showToast('Added', 'Event created in Google Calendar.');
+        await loadCalendarMonth();
+        renderDayEvents();
+        confettiBurst();
+      } catch (e) {
+        showToast('Add failed', e.message);
+      }
+    }
+    async function loadCalendarMonth() {
+      const connect = document.getElementById('google-connect');
+      try {
+        const res = await fetch('/api/calendar/month');
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.error === 'google_not_connected') {
+            connect.classList.remove('hidden');
+            renderMonthGrid([]);
+            renderEventList([]);
+            return;
+          }
+          throw new Error(data.error || 'calendar_error');
+        }
+        connect.classList.add('hidden');
+        calendar = data;
+        renderMonthGrid(calendar.dot_days);
+        renderEventList(calendar.events);
+        if (selectedDay) renderDayEvents();
+      } catch (e) {
+        connect.classList.remove('hidden');
+        renderMonthGrid([]);
+        renderEventList([]);
+      }
+    }
+
+    // ---------- Custom alarm sound ----------
+    function initCustomSound() {
+      const input = document.getElementById('custom-sound');
+      const status = document.getElementById('sound-status');
+      input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (!file.type.includes('audio')) {
+          showToast('Unsupported', 'Please choose an MP3 audio file.');
+          return;
+        }
+        if (customSoundUrl) URL.revokeObjectURL(customSoundUrl);
+        customSoundUrl = URL.createObjectURL(file);
+        const audio = getAudioEl();
+        audio.src = customSoundUrl;
+        status.textContent = `Using custom sound: ${file.name}`;
+        showToast('Custom sound', 'Alarm sound updated (local only).');
+      });
+      // Ensure volume stays in sync
+      document.getElementById('volume').addEventListener('input', ensureAudioReady);
+    }
+
+    // ---------- Focus Mode ----------
+    function openFocusMode() {
+      const el = document.getElementById('focus-overlay');
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      renderFocus();
+    }
+    function closeFocusMode() {
+      const el = document.getElementById('focus-overlay');
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+      if (focusTimer) { clearInterval(focusTimer); focusTimer = null; }
+      focusRunning = false;
+      document.getElementById('focus-toggle').textContent = 'Start';
+    }
+    function toggleFocus() {
+      focusRunning = !focusRunning;
+      document.getElementById('focus-toggle').textContent = focusRunning ? 'Pause' : 'Start';
+      if (focusRunning && !focusTimer) {
+        focusTimer = setInterval(() => {
+          if (!focusRunning) return;
+          focusRemaining = Math.max(0, focusRemaining - 1);
+          renderFocus();
+          if (focusRemaining === 0) {
+            focusRunning = false;
+            clearInterval(focusTimer);
+            focusTimer = null;
+            document.getElementById('focus-toggle').textContent = 'Start';
+            showToast('Focus complete', '25 minutes done. Take a short break.');
+            confettiBurst();
+          }
+        }, 1000);
+      }
+    }
+    function resetFocus() {
+      focusRemaining = focusTotal;
+      renderFocus();
+      showToast('Reset', 'Focus timer reset to 25:00.');
+    }
+    function renderFocus() {
+      const mm = Math.floor(focusRemaining / 60);
+      const ss = focusRemaining % 60;
+      document.getElementById('focus-time').textContent = `${pad2(mm)}:${pad2(ss)}`;
+      const ring = document.getElementById('focus-ring');
+      const circumference = 389.6;
+      const pct = focusRemaining / focusTotal;
+      ring.style.strokeDasharray = String(circumference);
+      ring.style.strokeDashoffset = String(circumference * (1 - pct));
+    }
+
+    // ---------- Utilities ----------
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    async function refreshAll() {
+      await Promise.all([loadTasks(), loadAlarms(), loadCalendarMonth()]);
+    }
+
+    // ---------- Boot ----------
+    document.addEventListener('DOMContentLoaded', async () => {
+      setGreeting();
+      updateClock();
+      setHeaderAccent();
+      setInterval(updateClock, 1000);
+      setInterval(setHeaderAccent, 60 * 1000);
+      loadSettings();
+      initTimePickers();
+      initCustomSound();
+      requestNotifications();
+      await refreshAll();
+      setInterval(checkAlarmsTick, 1000);
+      setInterval(checkAutoShift, 60 * 1000);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { closeSettings(); }
+      });
+      // Clicking anywhere once helps satisfy autoplay restrictions
+      document.addEventListener('pointerdown', () => { try { getAudioEl().play().then(() => getAudioEl().pause()).catch(() => {}); } catch {} }, { once: true });
+    });
+  </script>
+</body>
+</html>

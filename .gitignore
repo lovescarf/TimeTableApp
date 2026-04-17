@@ -1,18 +1,27 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-.env/
-venv/
+# --- Secrets & Config ---
+.env
+token.json
+client_secret.json
 
+# --- Local Testing Scripts ---
+test.py
+test_*.py
+
+# --- Python Environment & Cache ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
 .venv/
+.env/
+
+# --- Database ---
+*.db
 instance/
 
-# Local database
-database.db
-
-# Google OAuth secrets/tokens (do not commit)
-credentials.json
-token.json
+# --- IDE Settings ---
+.vscode/
+.cursor/
+.idea/
+.DS_Store
